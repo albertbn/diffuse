@@ -2,6 +2,7 @@
 # start with https://github.com/facebookresearch/xformers
 # for cuda 12.4 (for other cudas, change tail) or 12.8
 # pip install -U xformers --index-url https://download.pytorch.org/whl/cu124
+# pip install -U xformers --index-url https://download.pytorch.org/whl/cu126
 # torch - this is installed by the xformers - install rest below
 # numpy
 
@@ -17,6 +18,7 @@ gradio
 git+https://github.com/openai/CLIP.git
 huggingface-hub
 accelerate
+opencv-python
 
 # 31-03-2025 14:24
 # install clipseg
