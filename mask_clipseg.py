@@ -112,4 +112,5 @@ class MaskGenerator:
 # Example usage (will be executed if running this script directly)
 if __name__ == "__main__":
     mask_gen: MaskGenerator = MaskGenerator("iwoman.jpeg", verbose=0)
+    # mask_gen: MaskGenerator = MaskGenerator("iwoman2.jpeg", verbose=0)
     mask: Image.Image = mask_gen.generate_mask("face")
