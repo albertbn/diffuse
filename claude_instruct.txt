@@ -1,4 +1,13 @@
 02-04-2025 10:01
+I've placed 3 loras in check_loras.py
+https://huggingface.co/ostris/photorealistic-slider-sdxl-lora
+https://huggingface.co/ntc-ai/SDXL-LoRA-slider.eyes
+https://huggingface.co/ntc-ai/SDXL-LoRA-slider.captivating-eyes
+
+the check_loras.py is working now
+should I make any change to inpaint.py? if not, give me the command to run inpaint
+-
+Okay, it's now generating good quality, let's find and implement two LoRAs - for realistic skin and realistic eyes
 
 01-04-2025 16:14
 
