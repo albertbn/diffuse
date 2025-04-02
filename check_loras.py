@@ -27,11 +27,16 @@ def check_loras(repo_id):
 
 # Check specific LoRA repositories
 lora_repos = [
-    "igorgomes3/Skin_Realistic_LoRa",
-    "ehristoforu/PhotoVision-XL-RealisticVision", 
-    "sayakpaul/sd-model-finetuned-lora-t4",
-    "SumioWinters/RealisticVisionV60XL_lora",
-    "latent-consistency/lcm-lora-sdxl"  # Fast inference
+    "ostris/photorealistic-slider-sdxl-lora",
+    "ntc-ai/SDXL-LoRA-slider.captivating-eyes",
+    "ntc-ai/SDXL-LoRA-slider.eyes",
+
+    # "prithivMLmods/Canopus-LoRA-Flux-FaceRealism",
+    # "igorgomes3/Skin_Realistic_LoRa",
+    # "ehristoforu/PhotoVision-XL-RealisticVision",
+    # "sayakpaul/sd-model-finetuned-lora-t4",
+    # "SumioWinters/RealisticVisionV60XL_lora",
+    # "latent-consistency/lcm-lora-sdxl"  # Fast inference
 ]
 
 print("Checking LoRA repositories for weight files...\n")
