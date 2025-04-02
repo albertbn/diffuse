@@ -58,7 +58,12 @@ class SDXLInpainter:
         if lora_paths:
             print(f"Loading {len(lora_paths)} LoRA models...")
             for lora_path, weight in lora_paths.items():
-                self.pipe.load_lora_weights(lora_path)
+                # Handle HuggingFace LoRAs vs local paths
+                if "/" in lora_path and not os.path.exists(lora_path):
+                    print(f"Loading LoRA from HuggingFace: {lora_path}")
+                    self.pipe.load_lora_weights(lora_path, adapter_name=lora_path.split("/")[-1])
+                else:
+                    self.pipe.load_lora_weights(lora_path)
                 print(f"Loaded LoRA from {lora_path} with weight {weight}")
             
             # Set the cross-attention scale for the LoRAs
@@ -71,6 +76,14 @@ class SDXLInpainter:
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
     
+    def set_lora_scale(self, scale: float):
+        """Set the LoRA scale for inference
+        
+        Args:
+            scale (float): Scale to apply to all loaded LoRAs
+        """
+        self.cross_attention_kwargs = {"scale": scale}
+    
     def inpaint(
         self,
         image_path: str,
@@ -82,7 +95,8 @@ class SDXLInpainter:
         num_inference_steps: int = 50,
         strength: float = 0.99,
         output_name: Optional[str] = None,
-        verbose: int = 0
+        verbose: int = 0,
+        lora_scale: Optional[float] = None
     ) -> Image.Image:
         """
         Perform inpainting on an image
@@ -121,6 +135,10 @@ class SDXLInpainter:
         if input_image.size != mask_image.size:
             mask_image = mask_image.resize(input_image.size, Image.LANCZOS)
         
+        # Set LoRA scale if provided
+        if lora_scale is not None:
+            self.set_lora_scale(lora_scale)
+            
         # Generate inpainted image
         print(f"Performing inpainting with {num_inference_steps} steps...")
         output = self.pipe(
@@ -163,7 +181,8 @@ def main():
     parser.add_argument("--verbose", type=int, default=0, help="Verbose mode (0=no, 1=yes)")
     parser.add_argument("--controlnet", action="store_true", default=True, help="Use ControlNet for better edges")
     parser.add_argument("--lora", type=str, help="Path to LoRA model (comma-separated for multiple)")
-    parser.add_argument("--lora_weight", type=float, default=0.8, help="Weight for LoRA models")
+    parser.add_argument("--lora_weight", type=str, default="0.8", help="Weight for LoRA models (comma-separated for multiple, matching --lora order)")
+    parser.add_argument("--lora_scale", type=float, help="Scale to apply during inference (overrides weights specified in --lora_weight)")
     
     args = parser.parse_args()
     
@@ -172,8 +191,19 @@ def main():
     if args.lora:
         lora_paths = {}
         loras = args.lora.split(",")
-        for lora in loras:
-            lora_paths[lora.strip()] = args.lora_weight
+        weights = args.lora_weight.split(",")
+        
+        # If only one weight is provided, apply it to all LoRAs
+        if len(weights) == 1 and len(loras) > 1:
+            weights = [weights[0]] * len(loras)
+            
+        # Ensure weights match the number of LoRAs
+        if len(weights) != len(loras):
+            print(f"Warning: Number of weights ({len(weights)}) doesn't match number of LoRAs ({len(loras)}). Using default weight 0.8 for all.")
+            weights = ["0.8"] * len(loras)
+            
+        for i, lora in enumerate(loras):
+            lora_paths[lora.strip()] = float(weights[i].strip())
     
     # Initialize inpainter
     inpainter = SDXLInpainter(
@@ -192,7 +222,8 @@ def main():
         num_inference_steps=args.steps,
         strength=args.strength,
         output_name=args.output,
-        verbose=args.verbose
+        verbose=args.verbose,
+        lora_scale=args.lora_scale
     )
 
 

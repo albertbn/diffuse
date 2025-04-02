@@ -1,5 +1,10 @@
+02-04-2025 10:01
+
 01-04-2025 16:14
-edit `install.sh` - save the dir of the `install.sh`
+
+edit `install.sh`
+* save the dir of the `install.sh`
+* at the end - `mv clipseg ...` change to command to use the above dir
 
 01-04-2025 11:58
 1. Hardware requirements:
