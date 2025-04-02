@@ -17,6 +17,7 @@ gradio
 git+https://github.com/openai/CLIP.git
 huggingface-hub
 accelerate
+peft
 
 # 31-03-2025 14:24
 # install clipseg

@@ -59,11 +59,36 @@ class SDXLInpainter:
             print(f"Loading {len(lora_paths)} LoRA models...")
             for lora_path, weight in lora_paths.items():
                 # Handle HuggingFace LoRAs vs local paths
-                if "/" in lora_path and not os.path.exists(lora_path):
-                    print(f"Loading LoRA from HuggingFace: {lora_path}")
-                    self.pipe.load_lora_weights(lora_path, adapter_name=lora_path.split("/")[-1])
-                else:
-                    self.pipe.load_lora_weights(lora_path)
+                try:
+                    if "/" in lora_path and not os.path.exists(lora_path):
+                        # Split the path to check for weight file specification
+                        if ":" in lora_path:
+                            repo_id, weight_name = lora_path.split(":", 1)
+                            adapter_name = repo_id.split("/")[-1]
+                            print(f"Loading LoRA from HuggingFace: {repo_id} with weight file: {weight_name}")
+                            self.pipe.load_lora_weights(
+                                repo_id, 
+                                weight_name=weight_name,
+                                adapter_name=adapter_name
+                            )
+                        else:
+                            # Try to load with default weight name
+                            print(f"Loading LoRA from HuggingFace: {lora_path}")
+                            print("Specify weight file with repo_id:filename.safetensors if loading fails")
+                            adapter_name = lora_path.split("/")[-1]
+                            self.pipe.load_lora_weights(
+                                lora_path,
+                                adapter_name=adapter_name
+                            )
+                    else:
+                        self.pipe.load_lora_weights(lora_path)
+                except ValueError as e:
+                    if "more than one weights file" in str(e):
+                        print(f"Error: {str(e)}")
+                        print("Please specify the weight file using format: repo_id:filename.safetensors")
+                        continue
+                    else:
+                        raise
                 print(f"Loaded LoRA from {lora_path} with weight {weight}")
             
             # Set the cross-attention scale for the LoRAs
@@ -180,7 +205,7 @@ def main():
     parser.add_argument("--output", type=str, help="Output filename")
     parser.add_argument("--verbose", type=int, default=0, help="Verbose mode (0=no, 1=yes)")
     parser.add_argument("--controlnet", action="store_true", default=True, help="Use ControlNet for better edges")
-    parser.add_argument("--lora", type=str, help="Path to LoRA model (comma-separated for multiple)")
+    parser.add_argument("--lora", type=str, help="Path to LoRA model (comma-separated for multiple). For HuggingFace models, use 'repo_id:filename.safetensors' format to specify the weight file.")
     parser.add_argument("--lora_weight", type=str, default="0.8", help="Weight for LoRA models (comma-separated for multiple, matching --lora order)")
     parser.add_argument("--lora_scale", type=float, help="Scale to apply during inference (overrides weights specified in --lora_weight)")
     
